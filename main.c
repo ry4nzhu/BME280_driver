@@ -12,11 +12,11 @@ void user_delay_ms(uint32_t period)
      * Return control or wait,
      * for a period amount of milliseconds
      */
-	volatile int i = 0;
-	while (i < 10000 * period) {
-		i++;
-	}
-	sleep(100*period);
+	// volatile int i = 0;
+	// while (i < 10000 * period) {
+	// 	i++;
+	// }
+	sleep(1000*period);
 
 	return;
 }
@@ -88,9 +88,9 @@ int main()
 		printf("success init!\r\n");
 	}
 
-	/* Recommended mode of operation: Indoor navigation */
-	dev.settings.osr_h = BME280_OVERSAMPLING_1X;
-	dev.settings.osr_p = BME280_OVERSAMPLING_16X;
+	/* Test for normal mode */
+	dev.settings.osr_h = BME280_OVERSAMPLING_2X;
+	dev.settings.osr_p = BME280_OVERSAMPLING_2X;
 	dev.settings.osr_t = BME280_OVERSAMPLING_2X;
 	dev.settings.filter = BME280_FILTER_COEFF_OFF;
 	dev.settings.standby_time = BME280_STANDBY_TIME_250_MS;
@@ -102,19 +102,36 @@ int main()
 	// set the sensor to normal mode
 	rslt = bme280_set_sensor_mode(BME280_NORMAL_MODE, &dev);
 
-//	if (bme280_set_sensor_mode(BME280_NORMAL_MODE, &dev) == 0) {
-//		printf("sensor mode normal\r\n");
-//	}
+	printf("Temperature, Pressure, Humidity\r\n");
+	/* Continuously stream sensor data */
+	while (1) {
+		/* Wait for the measurement to complete and print data @25Hz */
+		dev.delay_ms(40);
+		rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, &dev);
+		print_sensor_data(&comp_data);
+	}
 
-	  printf("Temperature, Pressure, Humidity\r\n");
-	  /* Continuously stream sensor data */
-	  while (1) {
-	    //rslt = bme280_set_sensor_mode(BME280_FORCED_MODE, &dev);
-	    /* Wait for the measurement to complete and print data @25Hz */
-	    dev.delay_ms(40);
-	    rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, &dev);
-	    print_sensor_data(&comp_data);
-	  }
+	/* Suggested Weather / Climate Monitor mode */
+	dev.settings.osr_h = BME280_OVERSAMPLING_1X;
+	dev.settings.osr_p = BME280_OVERSAMPLING_1X;
+	dev.settings.osr_t = BME280_OVERSAMPLING_1X;
+	dev.settings.filter = BME280_FILTER_COEFF_OFF;
+
+	rslt = bme280_set_sensor_settings((uint8_t)0x0F, &dev);
+
+	printf("Temperature, Pressure, Humidity\r\n");
+	/* Continuously stream sensor data */
+	while (1) {
+	rslt = bme280_set_sensor_mode(BME280_FORCED_MODE, &dev);
+	/* Wait for the measurement to complete and print data @25Hz */
+	dev.delay_ms(40);
+	rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, &dev);
+	print_sensor_data(&comp_data);
+	}
+
+
+
+
 //	while (1) {
 //		//bme280_set_sensor_mode(BME280_FORCED_MODE, &dev);
 //		bme280_get_sensor_data(BME280_TEMP, &d, &dev);
