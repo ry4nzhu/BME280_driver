@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <inttypes.h>
+#include <unistd.h>
 #include "stdlib.h"
 #include "drivers/mss_i2c/mss_i2c.h"
 #include "bme280.h"
@@ -12,11 +13,10 @@ void user_delay_ms(uint32_t period)
      * Return control or wait,
      * for a period amount of milliseconds
      */
-	// volatile int i = 0;
-	// while (i < 10000 * period) {
-	// 	i++;
-	// }
-	sleep(1000*period);
+	 volatile int i = 0;
+	 while (i < 10000 * period) {
+	 	i++;
+	 }
 
 	return;
 }
@@ -40,7 +40,6 @@ int8_t user_i2c_read(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16
 
 int8_t user_i2c_write(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len)
 {
-	int i = 0;
 	int8_t rslt = 0; /* Return 0 for Success, non-zero for failure */
    // uint8_t* arr = malloc((len + 1) * sizeof(uint8_t));
    // arr[0] = reg_addr;
@@ -72,7 +71,6 @@ int main()
 	struct bme280_data comp_data;
 	int8_t rslt = BME280_OK;
 	uint8_t settings_sel;
-	printf("hello\r\n");
 
 	dev.dev_id = BME280_I2C_ADDR_PRIM;
 	dev.intf = BME280_I2C_INTF;
@@ -89,9 +87,9 @@ int main()
 	}
 
 	/* Test for normal mode */
-	dev.settings.osr_h = BME280_OVERSAMPLING_2X;
-	dev.settings.osr_p = BME280_OVERSAMPLING_2X;
-	dev.settings.osr_t = BME280_OVERSAMPLING_2X;
+	dev.settings.osr_h = BME280_OVERSAMPLING_1X;
+	dev.settings.osr_p = BME280_OVERSAMPLING_1X;
+	dev.settings.osr_t = BME280_OVERSAMPLING_1X;
 	dev.settings.filter = BME280_FILTER_COEFF_OFF;
 	dev.settings.standby_time = BME280_STANDBY_TIME_250_MS;
 
@@ -152,7 +150,6 @@ int main()
 		sizeof(write),
 		MSS_I2C_RELEASE_BUS
 	);
-
 	MSS_I2C_wait_complete(&g_mss_i2c1, MSS_I2C_NO_TIMEOUT);
     //MSS_I2C_init( &g_mss_i2c1, read, MSS_I2C_PCLK_DIV_256 );
 	MSS_I2C_read
